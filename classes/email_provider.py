@@ -1,13 +1,15 @@
 from typing import List
 from classes.email import email
+from abc import ABC, abstractmethod
 
-class base_email_provider:
+class base_email_provider(ABC):
     """
     This is a Java-style interface storing information about an email provider and some functions for authenticating, reading emails, anddrafting/sending a new email.
     It will not work unless overridden by subclasses.
     """
     def __init__(self, name: str):
         self.name = name
+    @abstractmethod
     def authenticate(self):
         """
         This is meant to be a Java-style interface for authenticating with a provider. It should be overridden by subclasses.
@@ -15,7 +17,8 @@ class base_email_provider:
         This method should handle authentication flow, token storage, and (if supported) refresh logic.
         It should return nothing if authentication is successful and throw an Exception if it fails.
         """
-        raise NotImplementedError("This method must be overridden by subclasses.")
+        pass
+    @abstractmethod
     def remove_acc(self):
         """
         This is meant to be a Java-style interface for removing an account from a provider. It should be overridden by subclasses.
@@ -23,7 +26,8 @@ class base_email_provider:
         This method should handle all necessary cleanup, such as deleting stored tokens, and (if supported) revoking access from the provider.
         It should return nothing if removal is successful and throw an Exception if it fails.
         """
-        raise NotImplementedError("This method must be overridden by subclasses.")
+        pass
+    @abstractmethod
     def check(self) -> List[email]:
         """
         This method is a Java-style interface for reading emails from a provider. It must be overridden by subclasses.
@@ -31,17 +35,19 @@ class base_email_provider:
         This method should return a list of email objects representing the emails in the user's inbox.
         It should throw an Exception if reading emails fails.
         """
-        raise NotImplementedError("This method must be overridden by subclasses.")
+        pass
+    @abstractmethod
     def draft(self, new_email: email):
         """
         This method is a Java-style interface for adding an email to the draft folder of a provider.
         If the provider supports a draft folder, this function must be overridden by subclass. If not, it may remain.
         The parameters provided here may not be changed, as this is an interface.
         """
-        raise NotImplementedError("This method must be overridden by subclasses.")
+        pass
+    @abstractmethod
     def send(self, new_email: email):
         """
         This method is a Java-style interface for sending an email from a provider.
         The parameters provided here may not be changed, as this is an interface.
         """
-        raise NotImplementedError("This method must be overridden by subclasses.")
+        pass
