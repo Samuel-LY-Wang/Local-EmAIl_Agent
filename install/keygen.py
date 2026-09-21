@@ -36,7 +36,7 @@ def save_keys(uid: str, n: int, priv_nums: dict[str, str]):
         f.write(f"{uid}")
     with open("auth/rsa_nums.json", "w") as f:
         json.dump(priv_nums, f)
-    requests.post(SERVER_ENDPOINT + "/register", params={"uid": uid, "n": n})
+    requests.post(SERVER_ENDPOINT + "/register", params={"uid": uid, "n": n}, timeout=10)
 
 if __name__ == "__main__":
     keys = gen_keys()

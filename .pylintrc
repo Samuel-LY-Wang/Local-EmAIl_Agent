@@ -1,0 +1,14 @@
+[BASIC]
+function-naming-style=snake_case
+method-naming-style=snake_case
+variable-naming-style=snake_case
+argument-naming-style=snake_case
+attr-naming-style=snake_case
+module-naming-style=snake_case, PascalCase
+
+class-naming-style=PascalCase
+class-attribute-naming-style=snake_case
+const-naming-style=UPPER_CASE
+
+[MESSAGES CONTROL]
+disable=missing-module-docstring, missing-function-docstring, missing-class-docstring, unspecified-encoding, wrong-import-order, attribute-defined-outside-init, missing-final-newline, line-too-long

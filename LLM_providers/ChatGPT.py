@@ -1,8 +1,8 @@
 import os
-from classes.LLM_provider import base_LLM_provider
+from classes.LLM_provider import BaseLLMProvider
 from openai import OpenAI
 
-class open_ai(base_LLM_provider):
+class ChatGPT(BaseLLMProvider):
     """
     Sample implementatioon of the "base_LLM_provider" interface for OpenAI's API.
     Stable base that can be copied and modified slightly for other providers (Claude, Gemini, etc.)

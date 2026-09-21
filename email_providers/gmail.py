@@ -2,7 +2,8 @@ from classes.email_provider import base_email_provider
 from classes.email import email
 from config.defaults import SERVER_ENDPOINT
 from util.open_in_browser import open_in_browser
-from util.rsa import *
+from util.rsa import rsa_encrypt, rsa_decrypt
+from errors.AuthError import AuthError
 from typing import List
 import requests
 import secrets
@@ -56,17 +57,18 @@ def exchange_code(uid: str, code: str, redirect_uri: str, code_verifier: str, se
     """
     Exchanges the authorization code for an access token.
     """
-    server_n = int(requests.get(f"{server_endpoint}/get_n", params={"uid": uid}).json().get("n"))
+    server_n = int(requests.get(f"{server_endpoint}/get_privkey", params={"uid": uid}, timeout=10).json().get("n"))
     verifier_enc, enc_key = rsa_encrypt(server_n, code_verifier)
     response = requests.post(
         f"{server_endpoint}/google_token_exchange",
-        json={"code": code, "uuid": uid, "redirect_uri": redirect_uri, "code_verifier": verifier_enc.hex(), "enc_key": enc_key.hex()}
+        json={"code": code, "uuid": uid, "redirect_uri": redirect_uri, "code_verifier": verifier_enc.hex(), "enc_key": enc_key.hex()},
+        timeout=10
     )
     if response.status_code != 200:
         raise RuntimeError(f"Failed to exchange code: {response.text}")
     return response.json()
 
-class google(base_email_provider):
+class Gmail(base_email_provider):
     """
     This class is an implementation of the base_email_provider interface for Gmail.
     """
@@ -81,7 +83,7 @@ class google(base_email_provider):
         Method handles OAuth2.0 flow, token storage, and refresh logic.
         """
         try:
-            resp = requests.get(SERVER_ENDPOINT, params={"provider": "google"}).json()
+            resp = requests.get(f"{SERVER_ENDPOINT}/get_creds", params={"provider": "google", "uuid": {self.uid}}, timeout=10).json()
             CLIENT_ID = resp["client_id"]
             SCOPES = resp["scopes"]
             listener, port = reserve_loopback_port()
@@ -108,7 +110,7 @@ class google(base_email_provider):
             with open("auth/gmail_token.json", "w") as f:
                 json.dump(token, f)
         except Exception as e:
-            raise Exception("Error loading credentials: " + str(e))
+            raise AuthError("Error loading credentials: " + str(e)) from e
 
     def remove_acc(self):
         """
@@ -139,5 +141,5 @@ class google(base_email_provider):
 
 
 if __name__ == "__main__":
-    g = google()
+    g = Gmail()
     g.authenticate()

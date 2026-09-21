@@ -1,9 +1,9 @@
-from classes.LLM_provider import base_LLM_provider
+from classes.LLM_provider import BaseLLMProvider
 import ollama as llama
 
-class ollama_local(base_LLM_provider):
+class OllamaLocal(BaseLLMProvider):
     """
-    Sample implementation of the "base_LLM_provider" interface for Ollama's API.
+    Sample implementation of the "BaseLLMProvider" interface for Ollama's API.
     """
     def __init__(self):
         super().__init__(name="Ollama", endpoint="http://localhost:11434", API_key="")
