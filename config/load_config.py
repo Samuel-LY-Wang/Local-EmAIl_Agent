@@ -1,4 +1,5 @@
 import json
+import dotenv
 
 def load_config(setting: str) -> dict:
     """
@@ -12,3 +13,10 @@ def load_config(setting: str) -> dict:
             base_sys_prompt = f.read()
         config_data["base_sys_prompt"] = base_sys_prompt
     return config_data
+
+def load_env() -> dict:
+    """
+    Loads environment variables from the .env file.
+    Returns a dictionary containing the environment variables.
+    """
+    return dotenv.dotenv_values(dotenv.find_dotenv())

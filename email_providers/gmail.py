@@ -1,6 +1,5 @@
 from classes.email_provider import base_email_provider
 from classes.email import email
-from config.defaults import SERVER_ENDPOINT
 from util.open_in_browser import open_in_browser
 from util.rsa import rsa_encrypt, rsa_decrypt
 from errors.AuthError import AuthError
@@ -74,8 +73,6 @@ class Gmail(base_email_provider):
     """
     def __init__(self):
         super().__init__("google")
-        with open("config/uuid.txt", "r") as f:
-            self.uid = f.read().strip()
 
     def authenticate(self):
         """
@@ -83,7 +80,7 @@ class Gmail(base_email_provider):
         Method handles OAuth2.0 flow, token storage, and refresh logic.
         """
         try:
-            resp = requests.get(f"{SERVER_ENDPOINT}/get_creds", params={"provider": "google", "uuid": {self.uid}}, timeout=10).json()
+            resp = requests.get(f"{self.handler_service_endpoint}/get_creds", params={"provider": "google", "uuid": {self.uid}}, timeout=10).json()
             CLIENT_ID = resp["client_id"]
             SCOPES = resp["scopes"]
             listener, port = reserve_loopback_port()
@@ -104,7 +101,7 @@ class Gmail(base_email_provider):
             auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
             open_in_browser(auth_url)
             code = parse_oauth2_callback(listener.accept()[0].recv(1024).decode("utf-8"), state)
-            token = exchange_code(self.uid, code, redirect_uri, code_verifier, SERVER_ENDPOINT)
+            token = exchange_code(self.uid, code, redirect_uri, code_verifier, self.handler_service_endpoint)
             self.access_token = token["access_token"]
             self.id_token = token.get("id_token")
             with open("auth/gmail_token.json", "w") as f:
