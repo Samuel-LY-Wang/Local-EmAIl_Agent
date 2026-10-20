@@ -13,6 +13,10 @@ def load_rsa_nums() -> dict[str, str]:
         priv_nums = json.load(f)
     return priv_nums
 
+"""
+Yes I know repeating-key XOR is not that secure
+However, it doesn't matter in this case. The key is the same length as the message.
+"""
 def xor_bytes(data: bytes, key: bytes) -> bytes:
     """Performs bitwise XOR on raw bytes payload."""
     key_len = len(key)
@@ -20,7 +24,7 @@ def xor_bytes(data: bytes, key: bytes) -> bytes:
     return bytes(b ^ key[i % key_len] for i, b in enumerate(data))
 
 def rsa_encrypt(public_key: int, message: str) -> tuple[bytes, bytes]:
-    xor_key = secrets.token_bytes(32)  # Generate a random 32-byte key
+    xor_key = secrets.token_bytes(128)  # Generate a random 128-byte (1024-bit) key
     rsa_key = rsa.RSAPublicNumbers(public_key, 65537).public_key()
     encrypted_key = rsa_key.encrypt(
         xor_key,

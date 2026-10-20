@@ -2,9 +2,9 @@ import json
 from cryptography.hazmat.primitives.asymmetric import rsa
 import requests
 import uuid
-from config.defaults import SERVER_ENDPOINT
+from config.env import env
 
-def gen_keys() -> dict[str, str]:
+def gen_keys() -> tuple[dict[str, str], dict[str, str]]:
     """
     Generates a new RSA key pair and returns them as a dictionary. Please note that the standard e=65537 is enforced (and is thus not returned).
     Returns:
@@ -12,13 +12,15 @@ def gen_keys() -> dict[str, str]:
     """
     private_key = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=2048
+        key_size=4096
     )
     numbers = private_key.private_numbers()
-    numbers_json = {
+    pub_nums = {
         "n": str(numbers.public_numbers.n),
-        "d": str(numbers.d),
         "e": str(numbers.public_numbers.e), # this should be "65537" but save anyways
+    }
+    priv_nums = {
+        "d": str(numbers.d),
         "p": str(numbers.p),
         "q": str(numbers.q),
         "dmp1": str(numbers.dmp1),
@@ -26,18 +28,21 @@ def gen_keys() -> dict[str, str]:
         "iqmp": str(numbers.iqmp)
     }
 
-    return numbers_json # e=65537 is standard and will be enforced
+    return pub_nums, priv_nums # e=65537 is standard and will be enforced
 
-def save_keys(uid: str, n: int, priv_nums: dict[str, str]):
+def save_keys(uid: str, pub: dict[str, str], priv: dict[str, str]) -> None:
     """
     Saves the UUID to auth/uuid.txt, the RSA private numbers to auth/rsa_nums.json, and registers the public modulus with the server (required for encryption).
     """
     with open("auth/uuid.txt", "w") as f:
         f.write(f"{uid}")
-    with open("auth/rsa_nums.json", "w") as f:
-        json.dump(priv_nums, f)
-    requests.post(SERVER_ENDPOINT + "/register", params={"uid": uid, "n": n}, timeout=10)
+    with open("auth/rsa_pub.json", "w") as f:
+        json.dump(pub, f, indent=4)
+    with open("auth/rsa_priv.json", "w") as f:
+        json.dump(priv, f, indent=4)
+    res = requests.post(env.server_endpoint + "/register", json={"uuid": uid, "n": pub["n"]}, timeout=10)
+    res.raise_for_status()
 
 if __name__ == "__main__":
-    keys = gen_keys()
-    save_keys(str(uuid.uuid4()), int(keys["n"]), keys)
+    pub, priv = gen_keys()
+    save_keys(str(uuid.uuid4()), pub, priv)

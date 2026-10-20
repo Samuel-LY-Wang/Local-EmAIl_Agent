@@ -1,7 +1,7 @@
 from typing import List
 from classes.email import email
 from abc import ABC, abstractmethod
-from config.load_config import load_env
+from config.env import env
 
 class base_email_provider(ABC):
     """
@@ -10,7 +10,7 @@ class base_email_provider(ABC):
     """
     def __init__(self, name: str):
         self.name = name
-        self.handler_service_endpoint: str = load_env().get("SERVER_ENDPOINT", "")
+        self.handler_service_endpoint = env.server_endpoint
         assert self.handler_service_endpoint, "SERVER_ENDPOINT environment variable is not set."
         with open("config/uuid.txt", "r") as f:
             self.uid = f.read().strip()
